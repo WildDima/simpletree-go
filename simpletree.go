@@ -1,4 +1,4 @@
-package woody
+package simpletree
 
 import (
 	"fmt"
