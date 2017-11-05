@@ -36,7 +36,7 @@ func (c *Node) AddSibling(i interface{}) (n *Node, err error) {
 		}
 	}()
 
-	c.Sibling = &Node{Value: n, Parent: c.Parent}
+	c.Sibling = &Node{Value: i, Parent: c.Parent}
 
 	n = c.Sibling
 
