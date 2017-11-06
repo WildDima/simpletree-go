@@ -150,3 +150,16 @@ func BenchmarkRemoveSibling(b *testing.B) {
 		base.RemoveSibling()
 	}
 }
+
+func BenchmarkNext(b *testing.B) {
+	base := &Node{Value: "First"}
+	iterator := base.NewDeepFirstSearch()
+	for n := 0; n < b.N; n++ {
+		base.AddChildren(&Node{Value: n})
+	}
+	b.ResetTimer()
+
+	for n := 0; n < b.N; n++ {
+		iterator.Next()
+	}
+}
