@@ -175,13 +175,34 @@ func BenchmarkRemoveSibling(b *testing.B) {
 func BenchmarkNext(b *testing.B) {
 	base := &Node{Value: "First"}
 	iterator := base.NewDeepFirstSearch()
-	for n := 0; n < b.N; n++ {
+	for n := 0; n < 50; n++ {
 		base.AddChildren(&Node{Value: n})
 	}
 	b.ResetTimer()
 
 	for n := 0; n < b.N; n++ {
 		iterator.Next()
+	}
+}
+
+func BenchmarkFind(b *testing.B) {
+	rootNode := &Node{Value: 0}
+	rootNode.AddChildren(1)
+	anotherNode, _ := rootNode.AddChildren(3)
+	anotherNode.AddChildren(2)
+
+	lambda := func(n *Node) (b bool) {
+		b = false
+
+		if n.Value.(int) == 2 {
+			b = true
+		}
+
+		return
+	}
+
+	for n := 0; n < b.N; n++ {
+		rootNode.Find(lambda)
 	}
 }
 
