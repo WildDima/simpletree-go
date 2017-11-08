@@ -19,6 +19,8 @@ type DeepFirstSearch struct {
 	visited     bool
 }
 
+type lambda func(n *Node) bool
+
 func (c *Node) setChildren(i interface{}) (*Node, error) {
 	if c.Children != nil {
 		return nil, fmt.Errorf("Children node for %v alreade exist", c)
@@ -46,6 +48,7 @@ func (c *Node) AddChildren(i interface{}) (*Node, error) {
 	for {
 		if child.Sibling == nil {
 			n = &Node{Value: i, Parent: c}
+			child.Sibling = n
 			break
 		}
 
@@ -97,6 +100,35 @@ func (c *Node) RemoveSibling() (n *Node, err error) {
 	return n, nil
 }
 
+func (c *Node) Find(l lambda) (*Node, bool) {
+	dfs := c.NewDeepFirstSearch()
+	for i := 0; true; i++ {
+		nc, err := dfs.Next()
+		if err != nil {
+			return nil, true
+		}
+
+		if l(nc) {
+			return nc, false
+		}
+	}
+
+	return nil, true
+}
+
+//func (c *Node) Select(l lambda) (ns []*Node, err bool) {
+//dfs := c.NewDeepFirstSearch()
+
+//for {
+//	nc := dfs.Next()
+//	if l(nc) {
+//		append(ns, nc)
+//	}
+//}
+
+//return ns, false
+//}
+
 func (c *Node) NewDeepFirstSearch() (dfs *DeepFirstSearch) {
 	dfs = new(DeepFirstSearch)
 	dfs.currentNode = c
@@ -121,10 +153,12 @@ func (dfs *DeepFirstSearch) Next() (n *Node, err error) {
 	if p.Children != nil && p.Children.visited != dfs.visited {
 		dfs.stack.Push(p.Children)
 		dfs.currentNode = p.Children
+		dfs.currentNode.visited = dfs.visited
 		n = dfs.currentNode
 	} else if p.Sibling != nil && p.Sibling.visited != dfs.visited {
 		dfs.stack.Push(p.Sibling)
 		dfs.currentNode = p.Sibling
+		dfs.currentNode.visited = dfs.visited
 		n = dfs.currentNode
 	} else if p.Parent != nil {
 		dfs.stack.Pop()

@@ -92,6 +92,27 @@ func TestRemoveSibling(t *testing.T) {
 	}
 }
 
+func TestFind(t *testing.T) {
+	rootNode := &Node{Value: 0}
+	rootNode.AddChildren(1)
+	anotherNode, _ := rootNode.AddChildren(3)
+	anotherNode.AddChildren(2)
+
+	lambda := func(n *Node) (b bool) {
+		b = false
+
+		if n.Value.(int) == 2 {
+			b = true
+		}
+
+		return
+	}
+
+	if got, _ := rootNode.Find(lambda); got == nil {
+		t.Errorf("Find() should return node, but was: %v, got")
+	}
+}
+
 func TestNext(t *testing.T) {
 	base := &Node{Value: "First"}
 	base.AddChildren(&Node{Value: 1})
@@ -162,4 +183,18 @@ func BenchmarkNext(b *testing.B) {
 	for n := 0; n < b.N; n++ {
 		iterator.Next()
 	}
+}
+
+func fillTree(depth int) *Node {
+	nd := &Node{Value: 0}
+
+	for i := 1; i < depth; i++ {
+		child, _ := nd.AddChildren(i)
+
+		for j := 1; j < depth; j++ {
+			child.AddChildren(j)
+		}
+	}
+
+	return nd
 }
