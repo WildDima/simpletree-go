@@ -66,11 +66,42 @@ func (c *Node) AddChildren(i interface{}) (n *Node, err error) {
 	return
 }
 
-//func (c *Node) DeleteIf(l lambda) (n *Node, res bool) {
-//n = c.Find(l)
+func (c *Node) DeleteIf(l lambda) (n *Node, res bool) {
+	n, res = c.Find(l)
 
-//n.Delete()
-//}
+	if !res {
+		return
+	}
+
+	leftSibl, lsPresent := n.Parent.Find(func(ln *Node) bool {
+		if ln.Sibling == n {
+			return true
+		} else {
+			return false
+		}
+	})
+
+	if lsPresent {
+		leftSibl.Sibling = n.Sibling
+	}
+
+	n.Parent = nil
+	n.Sibling = nil
+
+	return
+}
+
+func (c *Node) Size() (s int) {
+	dfs := c.NewDeepFirstSearch()
+	res := true
+
+	for res {
+		_, res = dfs.Next()
+		s += 1
+	}
+
+	return
+}
 
 func (c *Node) Select(l lambda) (ns []*Node, res bool) {
 	dfs := c.NewDeepFirstSearch()

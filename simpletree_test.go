@@ -106,6 +106,24 @@ func TestFind(t *testing.T) {
 	}
 }
 
+func TestDeleteIf(t *testing.T) {
+	rootNode := fillTree(10)
+
+	lambda := func(n *Node) (b bool) {
+		b = false
+
+		if n.Value.(int) == 2 {
+			b = true
+		}
+
+		return
+	}
+
+	if got, _ := rootNode.DeleteIf(lambda); got == nil {
+		t.Errorf("Delete() should return node, but was: %v, got")
+	}
+}
+
 func TestSelect(t *testing.T) {
 	rootNode := fillTree(5)
 
@@ -121,6 +139,14 @@ func TestSelect(t *testing.T) {
 
 	if got, _ := rootNode.Select(lambda); len(got) != 9 {
 		t.Errorf("Find() should return 9 nodes, but was: %v", len(got))
+	}
+}
+
+func TestSize(t *testing.T) {
+	base := fillTree(10)
+
+	if got := base.Size(); got != 181 {
+		t.Errorf("Size() = %v", got)
 	}
 }
 
@@ -222,6 +248,32 @@ func BenchmarkSelect(b *testing.B) {
 
 	for n := 0; n < b.N; n++ {
 		rootNode.Select(lambda)
+	}
+}
+
+func BenchmarkDeleteIf(b *testing.B) {
+	rootNode := fillTree(5)
+
+	lambda := func(n *Node) (b bool) {
+		b = false
+
+		if n.Value.(int) == 2 {
+			b = true
+		}
+
+		return
+	}
+
+	for n := 0; n < b.N; n++ {
+		rootNode.DeleteIf(lambda)
+	}
+}
+
+func BenchmarkSize(b *testing.B) {
+	rootNode := fillTree(10)
+
+	for n := 0; n < b.N; n++ {
+		rootNode.Size()
 	}
 }
 
