@@ -1,15 +1,11 @@
 package simpletree
 
 import (
-	"reflect"
 	"testing"
 )
 
 func TestAddChildren(t *testing.T) {
-	base := &Node{Value: "First"}
-	for i := 0; i < 10; i++ {
-		base.AddChildren(i)
-	}
+	base := fillTree(10)
 
 	tests := []struct {
 		input interface{}
@@ -40,19 +36,19 @@ func TestAddChildren(t *testing.T) {
 	}
 }
 
-func TestsetChildren(t *testing.T) {
+func TestSetChildren(t *testing.T) {
 	base := &Node{Value: "First"}
 
 	tests := []struct {
 		input interface{}
 		want  Node
 	}{
-		{input: "Hi", want: Node{Value: "Added"}},
+		{input: "Hi", want: Node{Value: "Hi"}},
 	}
 
 	for _, test := range tests {
-		if got, err := base.setChildren(test.input); reflect.DeepEqual(*got, test.want) || err != nil {
-			t.Errorf("setChildren(%v) = %v", test.input, got)
+		if got, err := base.setChildren(test.input); got.Value.(string) != test.want.Value.(string) || err != nil {
+			t.Errorf("setChildren(%v) = %v", test.input, got.Value)
 		}
 	}
 }
@@ -64,12 +60,12 @@ func TestAddSibling(t *testing.T) {
 		input interface{}
 		want  Node
 	}{
-		{input: "Hi", want: Node{Value: "Added"}},
+		{input: "Hi", want: Node{Value: "Hi"}},
 	}
 
 	for _, test := range tests {
-		if got, err := base.AddSibling(test.input); reflect.DeepEqual(*got, test.want) || err != nil {
-			t.Errorf("AddSibling(%v) = %v", test.input, got)
+		if got, err := base.addSibling(test.input); got.Value.(string) != test.want.Value.(string) || err != nil {
+			t.Errorf("addSibling(%v) = %v", test.input, got.Value)
 		}
 	}
 }
@@ -78,25 +74,22 @@ func TestRemoveChildren(t *testing.T) {
 	base := &Node{Value: "First"}
 	base.setChildren(&Node{Value: "Will remove it"})
 
-	if got, err := base.RemoveChildren(); got == nil || base.Children != nil || err != nil {
-		t.Errorf("RemoveChildren() should remove children, but wasn't: %v", base)
+	if got, err := base.removeChildren(); got == nil || base.Children != nil || err != nil {
+		t.Errorf("removeChildren() should remove children, but wasn't: %v", base)
 	}
 }
 
 func TestRemoveSibling(t *testing.T) {
 	base := &Node{Value: "First"}
-	base.AddSibling(&Node{Value: "Will remove it"})
+	base.addSibling(&Node{Value: "Will remove it"})
 
-	if got, err := base.RemoveSibling(); got == nil || base.Children != nil || err != nil {
-		t.Errorf("RemoveSibling() should remove sibling, but wasn't: %v", base)
+	if got, err := base.removeSibling(); got == nil || base.Children != nil || err != nil {
+		t.Errorf("removeSibling() should remove sibling, but wasn't: %v", base)
 	}
 }
 
 func TestFind(t *testing.T) {
-	rootNode := &Node{Value: 0}
-	rootNode.AddChildren(1)
-	anotherNode, _ := rootNode.AddChildren(3)
-	anotherNode.AddChildren(2)
+	rootNode := fillTree(10)
 
 	lambda := func(n *Node) (b bool) {
 		b = false
@@ -114,18 +107,14 @@ func TestFind(t *testing.T) {
 }
 
 func TestNext(t *testing.T) {
-	base := &Node{Value: "First"}
-	base.AddChildren(&Node{Value: 1})
-	base.AddChildren(&Node{Value: 2})
-	n, _ := base.AddChildren(&Node{Value: 3})
-	n.AddChildren(&Node{Value: 4})
-	n.AddChildren(&Node{Value: 5})
+	size := 5
+	base := fillTree(size)
 
 	iterator := base.NewDeepFirstSearch()
 
-	for n := 1; n < 6; n++ {
-		if got, _ := iterator.Next(); got.Value == n {
-			t.Errorf("iterator.Next() != %v", n)
+	for n := 1; n < size*size+size; n++ {
+		if got, _ := iterator.Next(); got.Parent == nil {
+			t.Errorf("iterator.Next() != %v, but == %v", n, got.Value)
 		}
 	}
 }
@@ -138,7 +127,7 @@ func BenchmarkAddChildren(b *testing.B) {
 	}
 }
 
-func BenchmarksetChildren(b *testing.B) {
+func BenchmarkSetChildren(b *testing.B) {
 	base := &Node{Value: "First"}
 
 	for n := 0; n < b.N; n++ {
@@ -150,7 +139,7 @@ func BenchmarkAddSibling(b *testing.B) {
 	base := &Node{Value: "First"}
 
 	for n := 0; n < b.N; n++ {
-		base.AddSibling(1)
+		base.addSibling(1)
 	}
 }
 
@@ -159,16 +148,16 @@ func BenchmarkRemoveChildren(b *testing.B) {
 	base.setChildren(&Node{Value: "Remove"})
 
 	for n := 0; n < b.N; n++ {
-		base.RemoveChildren()
+		base.removeChildren()
 	}
 }
 
 func BenchmarkRemoveSibling(b *testing.B) {
 	base := &Node{Value: "First"}
-	base.AddSibling(&Node{Value: "Remove"})
+	base.addSibling(&Node{Value: "Remove"})
 
 	for n := 0; n < b.N; n++ {
-		base.RemoveSibling()
+		base.removeSibling()
 	}
 }
 

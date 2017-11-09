@@ -21,23 +21,31 @@ type DeepFirstSearch struct {
 
 type lambda func(n *Node) bool
 
-func (c *Node) setChildren(i interface{}) (*Node, error) {
-	if c.Children != nil {
-		return nil, fmt.Errorf("Children node for %v alreade exist", c)
-	}
-
-	c.Children = &Node{Value: i, Parent: c}
-
-	return c.Children, nil
-}
-
 func NewNode(i interface{}) *Node {
 	n := &Node{Value: i}
 	return n
 }
 
-func (c *Node) AddChildren(i interface{}) (*Node, error) {
-	var n *Node
+func (c *Node) Find(l lambda) (n *Node, res bool) {
+	dfs := c.NewDeepFirstSearch()
+	for {
+		n, res = dfs.Next()
+		if !res {
+			n, res = nil, false
+			return
+		}
+
+		if l(n) {
+			res = true
+			return
+		}
+	}
+
+	n, res = nil, false
+	return
+}
+
+func (c *Node) AddChildren(i interface{}) (n *Node, err error) {
 	if c.Children == nil {
 		c.Children = &Node{Value: i, Parent: c}
 		return c.Children, nil
@@ -55,66 +63,14 @@ func (c *Node) AddChildren(i interface{}) (*Node, error) {
 		child = child.Sibling
 	}
 
-	return n, nil
+	return
 }
 
-func (c *Node) AddSibling(i interface{}) (n *Node, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			n, err = nil, fmt.Errorf("Error while adding %q to node %q", n, c)
-		}
-	}()
+//func (c *Node) DeleteIf(l lambda) (n *Node, res bool) {
+//n = c.Find(l)
 
-	c.Sibling = &Node{Value: i, Parent: c.Parent}
-
-	n = c.Sibling
-
-	return n, nil
-}
-
-func (c *Node) RemoveChildren() (n *Node, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			n, err = nil, fmt.Errorf("Error while adding %q to node %q", n, c)
-		}
-	}()
-
-	c.Children = nil
-
-	n = c
-
-	return n, nil
-}
-
-func (c *Node) RemoveSibling() (n *Node, err error) {
-	defer func() {
-		if r := recover(); r != nil {
-			n, err = nil, fmt.Errorf("Error while adding %q to node %q", n, c)
-		}
-	}()
-
-	c.Sibling = nil
-
-	n = c
-
-	return n, nil
-}
-
-func (c *Node) Find(l lambda) (*Node, bool) {
-	dfs := c.NewDeepFirstSearch()
-	for i := 0; true; i++ {
-		nc, err := dfs.Next()
-		if err != nil {
-			return nil, true
-		}
-
-		if l(nc) {
-			return nc, false
-		}
-	}
-
-	return nil, true
-}
+//n.Delete()
+//}
 
 //func (c *Node) Select(l lambda) (ns []*Node, err bool) {
 //dfs := c.NewDeepFirstSearch()
@@ -139,12 +95,13 @@ func (c *Node) NewDeepFirstSearch() (dfs *DeepFirstSearch) {
 	return dfs
 }
 
-func (dfs *DeepFirstSearch) Next() (n *Node, err error) {
+func (dfs *DeepFirstSearch) Next() (n *Node, res bool) {
 	i, present := dfs.stack.Peek()
+	res = true
 
 	if !present {
-		n = nil
-		err = fmt.Errorf("Finished!")
+		n, res = nil, false
+		fmt.Println(n, res)
 		return
 	}
 
@@ -163,10 +120,65 @@ func (dfs *DeepFirstSearch) Next() (n *Node, err error) {
 	} else if p.Parent != nil {
 		dfs.stack.Pop()
 		dfs.currentNode = p.Parent
+		dfs.currentNode.visited = dfs.visited
 		n = dfs.currentNode
 	} else {
-		n, err = nil, fmt.Errorf("Finished!")
+		n, res = nil, false
 	}
+
+	return
+}
+
+func (c *Node) setChildren(i interface{}) (n *Node, err error) {
+	if c.Children != nil {
+		n, err = nil, fmt.Errorf("Children node for %v alreade exist", c)
+	}
+
+	c.Children = &Node{Value: i, Parent: c}
+
+	n = c.Children
+
+	return
+}
+
+func (c *Node) addSibling(i interface{}) (n *Node, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			n, err = nil, fmt.Errorf("Error while adding %q to node %q", n, c)
+		}
+	}()
+
+	c.Sibling = &Node{Value: i, Parent: c.Parent}
+
+	n = c.Sibling
+
+	return
+}
+
+func (c *Node) removeChildren() (n *Node, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			n, err = nil, fmt.Errorf("Error while adding %q to node %q", n, c)
+		}
+	}()
+
+	c.Children = nil
+
+	n = c
+
+	return
+}
+
+func (c *Node) removeSibling() (n *Node, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			n, err = nil, fmt.Errorf("Error while adding %q to node %q", n, c)
+		}
+	}()
+
+	c.Sibling = nil
+
+	n = c
 
 	return
 }
