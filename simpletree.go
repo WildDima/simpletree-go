@@ -72,18 +72,27 @@ func (c *Node) AddChildren(i interface{}) (n *Node, err error) {
 //n.Delete()
 //}
 
-//func (c *Node) Select(l lambda) (ns []*Node, err bool) {
-//dfs := c.NewDeepFirstSearch()
+func (c *Node) Select(l lambda) (ns []*Node, res bool) {
+	dfs := c.NewDeepFirstSearch()
 
-//for {
-//	nc := dfs.Next()
-//	if l(nc) {
-//		append(ns, nc)
-//	}
-//}
+	for {
+		var n *Node
 
-//return ns, false
-//}
+		n, res = dfs.Next()
+
+		if !res {
+			break
+		}
+
+		if l(n) {
+			ns = append(ns, n)
+		}
+	}
+
+	res = len(ns) == 0
+
+	return
+}
 
 func (c *Node) NewDeepFirstSearch() (dfs *DeepFirstSearch) {
 	dfs = new(DeepFirstSearch)

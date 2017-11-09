@@ -106,6 +106,24 @@ func TestFind(t *testing.T) {
 	}
 }
 
+func TestSelect(t *testing.T) {
+	rootNode := fillTree(5)
+
+	lambda := func(n *Node) (b bool) {
+		b = false
+
+		if n.Value.(int) == 4 {
+			b = true
+		}
+
+		return
+	}
+
+	if got, _ := rootNode.Select(lambda); len(got) != 9 {
+		t.Errorf("Find() should return 9 nodes, but was: %v", len(got))
+	}
+}
+
 func TestNext(t *testing.T) {
 	size := 5
 	base := fillTree(size)
@@ -162,11 +180,8 @@ func BenchmarkRemoveSibling(b *testing.B) {
 }
 
 func BenchmarkNext(b *testing.B) {
-	base := &Node{Value: "First"}
+	base := fillTree(50)
 	iterator := base.NewDeepFirstSearch()
-	for n := 0; n < 50; n++ {
-		base.AddChildren(&Node{Value: n})
-	}
 	b.ResetTimer()
 
 	for n := 0; n < b.N; n++ {
@@ -175,10 +190,7 @@ func BenchmarkNext(b *testing.B) {
 }
 
 func BenchmarkFind(b *testing.B) {
-	rootNode := &Node{Value: 0}
-	rootNode.AddChildren(1)
-	anotherNode, _ := rootNode.AddChildren(3)
-	anotherNode.AddChildren(2)
+	rootNode := fillTree(5)
 
 	lambda := func(n *Node) (b bool) {
 		b = false
@@ -192,6 +204,24 @@ func BenchmarkFind(b *testing.B) {
 
 	for n := 0; n < b.N; n++ {
 		rootNode.Find(lambda)
+	}
+}
+
+func BenchmarkSelect(b *testing.B) {
+	rootNode := fillTree(5)
+
+	lambda := func(n *Node) (b bool) {
+		b = false
+
+		if n.Value.(int) == 2 {
+			b = true
+		}
+
+		return
+	}
+
+	for n := 0; n < b.N; n++ {
+		rootNode.Select(lambda)
 	}
 }
 
