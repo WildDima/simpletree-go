@@ -122,6 +122,24 @@ func TestDeleteIf(t *testing.T) {
 	if got, _ := rootNode.DeleteIf(lambda); got == nil {
 		t.Errorf("Delete() should return node, but was: %v, got")
 	}
+
+	rootNode = fillTree(5)
+
+	lambda = func(n *Node) (b bool) {
+		b = false
+
+		if n.Value.(int) == 2 {
+			b = true
+		}
+
+		return
+	}
+
+	rootNode.DeleteIf(lambda)
+	//if got, _ := rootNode.DeleteIf(lambda); got != nil {
+	if _, res := rootNode.DeleteIf(lambda); !res {
+		t.Errorf("Delete() should return false, but was: %v", res)
+	}
 }
 
 func TestSelect(t *testing.T) {
@@ -137,15 +155,24 @@ func TestSelect(t *testing.T) {
 		return
 	}
 
-	if got, _ := rootNode.Select(lambda); len(got) != 9 {
-		t.Errorf("Find() should return 9 nodes, but was: %v", len(got))
+	if got, _ := rootNode.Select(lambda); len(got) != 4 {
+		t.Errorf("Find() should return 4 nodes, but was: %v", len(got))
 	}
 }
 
 func TestSize(t *testing.T) {
-	base := fillTree(10)
+	base := fillTree(5)
 
-	if got := base.Size(); got != 181 {
+	if got := base.Size(); got != 21 {
+		t.Errorf("Size() = %v", got)
+	}
+
+	base = &Node{Value: 0}
+	base.AddChildren(1)
+	base.AddChildren(2)
+	base.AddChildren(3)
+
+	if got := base.Size(); got != 4 {
 		t.Errorf("Size() = %v", got)
 	}
 }
@@ -156,10 +183,13 @@ func TestNext(t *testing.T) {
 
 	iterator := base.NewDeepFirstSearch()
 
-	for n := 1; n < size*size+size; n++ {
-		if got, _ := iterator.Next(); got.Parent == nil {
-			t.Errorf("iterator.Next() != %v, but == %v", n, got.Value)
-		}
+	var got *Node
+
+	for n := 1; n < size*(size-1)+2; n++ {
+		got, _ = iterator.Next()
+	}
+	if got.Parent != nil {
+		t.Errorf("iterator.Next() != %v, but == %v", got.Value)
 	}
 }
 
@@ -284,7 +314,7 @@ func fillTree(depth int) *Node {
 		child, _ := nd.AddChildren(i)
 
 		for j := 1; j < depth; j++ {
-			child.AddChildren(j)
+			child.AddChildren(i + j)
 		}
 	}
 

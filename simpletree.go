@@ -69,7 +69,7 @@ func (c *Node) AddChildren(i interface{}) (n *Node, err error) {
 func (c *Node) DeleteIf(l lambda) (n *Node, res bool) {
 	n, res = c.Find(l)
 
-	if !res {
+	if !res || (n.Parent == nil && n.Sibling == nil && n.Children == nil) {
 		return
 	}
 
@@ -96,7 +96,13 @@ func (c *Node) Size() (s int) {
 	res := true
 
 	for res {
-		_, res = dfs.Next()
+		var val *Node
+		val, res = dfs.Next()
+		// Bug in stack size
+		if c == val {
+			s += 1
+			break
+		}
 		s += 1
 	}
 
@@ -141,7 +147,6 @@ func (dfs *DeepFirstSearch) Next() (n *Node, res bool) {
 
 	if !present {
 		n, res = nil, false
-		fmt.Println(n, res)
 		return
 	}
 
@@ -161,6 +166,8 @@ func (dfs *DeepFirstSearch) Next() (n *Node, res bool) {
 		dfs.stack.Pop()
 		dfs.currentNode = p.Parent
 		dfs.currentNode.visited = dfs.visited
+		// workaround
+		dfs.Next()
 		n = dfs.currentNode
 	} else {
 		n, res = nil, false
